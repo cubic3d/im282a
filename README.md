@@ -16,7 +16,7 @@ python -m pip install im282a
 ```
 import importlib
 
-from lib.im282a import *
+from im282a.im282a import *
 from threading import Thread
 
 
