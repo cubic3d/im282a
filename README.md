@@ -20,7 +20,7 @@ from im282a import *
 from threading import Thread
 
 
-def receiver(radio: IM282a):
+def receiver(radio: IM282A):
     while True:
         try:
             radio.receive()
@@ -28,19 +28,8 @@ def receiver(radio: IM282a):
             exit(0)
 
 
-def default_print_handler(header: bytes, data: bytes):
-    hci = HciMessage.from_bytes(header)
-    module = importlib.import_module("lib.im282a")
-    msg_class = getattr(module, hci.msg_class_name())
-    msg = msg_class.from_bytes(data)
-    print(msg)
-
-
 radio1 = IM282A("localhost", 10000, 3)
 radio2 = IM282A("localhost", 10001, 3)
-
-radio1.default_handler = default_print_handler
-radio2.default_handler = default_print_handler
 
 t1 = Thread(target=receiver, args=(radio1,))
 t2 = Thread(target=receiver, args=(radio2,))

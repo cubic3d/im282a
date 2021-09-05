@@ -5,6 +5,7 @@ import sliplib
 from crccheck.crc import Crc16X25 as _Crc16X25
 from datetime import datetime as _datetime
 from collections.abc import Callable as _Callable
+from typing import Any as _Any
 
 
 class HciMessage:
@@ -27,8 +28,11 @@ class HciMessage:
     def __bytes__(self):
         return struct.pack("BB", self.endpoint_id, self.message_id)
 
-    def msg_class_name(self) -> str:
+    def get_msg_class_name(self) -> str:
         return self.translate_class(self.endpoint_id, self.message_id)
+
+    def get_msg_class(self) -> _Any:
+        return globals()[self.get_msg_class_name()]
 
     @classmethod
     def from_bytes(cls, data: bytes):
@@ -3088,8 +3092,7 @@ class IM282A:
     def __init__(self, address: str, port: int, timeout: float = None):
         self._sock = sliplib.SlipSocket.create_connection((address, port), timeout)
         self._handlers = {}
-        self.default_handler = lambda header, data: print("default handler: received <{}>{}".format(
-            header.hex(), data.hex()))
+        self.default_handler = self.default_handler_function
 
     def __enter__(self):
         return self
@@ -3129,3 +3132,10 @@ class IM282A:
                 h(data[2:-2])
         else:
             self.default_handler(data[:2], data[2:-2])
+
+    @staticmethod
+    def default_handler_function(header: bytes, data: bytes):
+        hci_message = HciMessage.from_bytes(header)
+        msg_class = hci_message.get_msg_class()
+        msg = msg_class.from_bytes(data)
+        print(msg)
