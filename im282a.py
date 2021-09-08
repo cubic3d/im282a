@@ -942,7 +942,7 @@ class SetRadioConfigReq(HciMessage, DevMgmtStatus, RadioConfig):
                                    "  RXControl: {} ({})\n" \
                                    "  RXWindowTime: {} ms\n" \
                                    "  LedControl:\n" \
-                                   "   RXIndicatorD2: {} ({})\n" \
+                                   "   RXIndicatorD3: {} ({})\n" \
                                    "   TXIndicatorD2: {} ({})\n" \
                                    "   AliveIndicatorD4: {} ({})\n" \
                                    "   ButtonPressedIndicatorD1: {} ({})\n" \
@@ -1278,7 +1278,7 @@ class GetRadioConfigRsp(HciMessage, DevMgmtStatus, RadioConfig):
                                    "  RXControl: {} ({})\n" \
                                    "  RXWindowTime: {} ms\n" \
                                    "  LedControl:\n" \
-                                   "   RXIndicatorD2: {} ({})\n" \
+                                   "   RXIndicatorD3: {} ({})\n" \
                                    "   TXIndicatorD2: {} ({})\n" \
                                    "   AliveIndicatorD4: {} ({})\n" \
                                    "   ButtonPressedIndicatorD1: {} ({})\n" \
