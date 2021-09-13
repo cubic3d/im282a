@@ -2292,10 +2292,10 @@ class SendUnreliableDataReq(HciMessage):
         return super().__str__() + "\n SendUnreliableDataReq:\n" \
                                    "  DstGroupAddress: 0x{:x}\n" \
                                    "  DstDeviceAddress: 0x{:x}\n" \
-                                   "  Payload: {} ({})".format(
+                                   "  Payload: {}".format(
             self.dst_group_address,
             self.dst_device_address,
-            self.payload.hex(), self.payload.decode("utf-8"),
+            self.payload.hex(),
         )
 
     def __bytes__(self):
@@ -2375,7 +2375,7 @@ class UnreliableDataRXInd(HciMessage, DataFormat, RTCTime):
                                    "  DstDeviceAddress: 0x{:x}\n" \
                                    "  SrcGroupAddress: 0x{:x}\n" \
                                    "  SrcDeviceAddress: 0x{:x}\n" \
-                                   "  Payload: {} ({})\n" \
+                                   "  Payload: {}\n" \
                                    "  Rssi: {} dBm\n" \
                                    "  Snr: {} dB\n" \
                                    "  RXTime: {}".format(
@@ -2387,7 +2387,7 @@ class UnreliableDataRXInd(HciMessage, DataFormat, RTCTime):
             self.dst_device_address,
             self.src_group_address,
             self.src_device_address,
-            self.payload.hex(), self.payload.decode("utf-8"),
+            self.payload.hex(),
             self.rssi_dbm,
             self.snr_db,
             self.rx_time,
@@ -2534,7 +2534,7 @@ class RawDataRXInd(HciMessage, DataFormat, RTCTime, RadioControl):
                                    "  SrcGroupAddress: 0x{:x}\n" \
                                    "  SrcDeviceAddress: 0x{:x}\n" \
                                    "  RadioStackFieldsReserved: 0x{:x}\n" \
-                                   "  Payload: {} ({})\n" \
+                                   "  Payload: {}\n" \
                                    "  Rssi: {} dBm\n" \
                                    "  Snr: {} dB\n" \
                                    "  RXTime: {}".format(
@@ -2550,7 +2550,7 @@ class RawDataRXInd(HciMessage, DataFormat, RTCTime, RadioControl):
             self.src_group_address,
             self.src_device_address,
             self.radio_stack_fields_reserved,
-            self.payload.hex(), self.payload.decode("utf-8"),
+            self.payload.hex(),
             self.rssi_dbm,
             self.snr_db,
             self.rx_time,
@@ -2630,10 +2630,10 @@ class SendConfirmedDataReq(HciMessage):
         return super().__str__() + "\n SendConfirmedDataReq:\n" \
                                    "  DstGroupAddress: 0x{:x}\n" \
                                    "  DstDeviceAddress: 0x{:x}\n" \
-                                   "  Payload: {} ({})".format(
+                                   "  Payload: {}".format(
             self.dst_group_address,
             self.dst_device_address,
-            self.payload.hex(), self.payload.decode("utf-8"),
+            self.payload.hex(),
         )
 
     def __bytes__(self):
@@ -2713,7 +2713,7 @@ class ConfirmedDataRXInd(HciMessage, DataFormat, RTCTime):
                                    "  DstDeviceAddress: 0x{:x}\n" \
                                    "  SrcGroupAddress: 0x{:x}\n" \
                                    "  SrcDeviceAddress: 0x{:x}\n" \
-                                   "  Payload: {} ({})\n" \
+                                   "  Payload: {}\n" \
                                    "  Rssi: {} dBm\n" \
                                    "  Snr: {} dB\n" \
                                    "  RXTime: {}".format(
@@ -2725,7 +2725,7 @@ class ConfirmedDataRXInd(HciMessage, DataFormat, RTCTime):
             self.dst_device_address,
             self.src_group_address,
             self.src_device_address,
-            self.payload.hex(), self.payload.decode("utf-8"),
+            self.payload.hex(),
             self.rssi_dbm,
             self.snr_db,
             self.rx_time,
@@ -2859,7 +2859,7 @@ class AckRXInd(HciMessage, DataFormat, RTCTime):
                                    "  DstDeviceAddress: 0x{:x}\n" \
                                    "  SrcGroupAddress: 0x{:x}\n" \
                                    "  SrcDeviceAddress: 0x{:x}\n" \
-                                   "  Payload: {} ({})\n" \
+                                   "  Payload: {}\n" \
                                    "  Rssi: {} dBm\n" \
                                    "  Snr: {} dB\n" \
                                    "  RXTime: {}".format(
@@ -2871,7 +2871,7 @@ class AckRXInd(HciMessage, DataFormat, RTCTime):
             self.dst_device_address,
             self.src_group_address,
             self.src_device_address,
-            self.payload.hex(), self.payload.decode("utf-8"),
+            self.payload.hex(),
             self.rssi_dbm,
             self.snr_db,
             self.rx_time,
@@ -2997,10 +2997,10 @@ class SetAckDataReq(HciMessage):
         return super().__str__() + "\n SetAckDataReq:\n" \
                                    "  DstGroupAddress: 0x{:x}\n" \
                                    "  DstDeviceAddress: 0x{:x}\n" \
-                                   "  Payload: {} ({})".format(
+                                   "  Payload: {}".format(
             self.dst_group_address,
             self.dst_device_address,
-            self.payload.hex(), self.payload.decode("utf-8"),
+            self.payload.hex(),
         )
 
     def __bytes__(self):
