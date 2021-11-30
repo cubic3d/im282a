@@ -1,9 +1,7 @@
 # iM282A WiMOD LR BASE+ HCI Python library
-This library allows to communicate with iM282A Radio (LoRa/FLRC/FSK) modules using vendor specific HCI messages and the WiMOD LR BASE+ proprietary firmware.
+This library allows communicating with iM282A Radio (LoRa/FLRC/FSK) modules using vendor specific HCI messages and the WiMOD LR BASE+ proprietary firmware.
 
-Currently only TCP serial socket communication is supported.
-
-> SensorApp endpoint is not supported (in firmware embedded sensor example application)! Feel free to open an issue if it's needed.
+> SensorApp endpoint is not supported (an in-firmware embedded sensor example application)! Feel free to open a PR if it's needed.
 
 > Most length limitations are not enforced or validated - make sure to read the corresponding vendor documentation of the firmware and module.
 
@@ -14,35 +12,28 @@ python -m pip install im282a
 
 ## Usage Example
 ```
-import importlib
-
 from im282a import *
 from threading import Thread
 
 
 def receiver(radio: IM282A):
     while True:
-        try:
-            radio.receive()
-        except:
-            exit(0)
+        radio.handle()
 
 
-radio1 = IM282A("localhost", 10000, 3)
-radio2 = IM282A("localhost", 10001, 3)
+with IM282A.from_serial("/dev/ttyUSB0", timeout=1) as radio1, IM282A.from_serial("/dev/ttyUSB1", timeout=1) as radio2:
+    t1 = Thread(target=receiver, args=(radio1,))
+    t2 = Thread(target=receiver, args=(radio2,))
+    t1.start()
+    t2.start()
 
-t1 = Thread(target=receiver, args=(radio1,))
-t2 = Thread(target=receiver, args=(radio2,))
-t1.start()
-t2.start()
+    radio1.send(SetRadioConfigReq(SetRadioModeReq.RadioControlNvmFlag_Ram))
+    radio2.send(SetRadioConfigReq(SetRadioModeReq.RadioControlNvmFlag_Ram))
 
-radio1.send(SetRadioConfigReq(SetRadioModeReq.RadioControlNvmFlag_Ram))
-radio2.send(SetRadioConfigReq(SetRadioModeReq.RadioControlNvmFlag_Ram))
-
-radio1.send(SendConfirmedDataReq(0x10, 0x1234, b"Test message!"))
-
-t1.join()
-t2.join()
+    radio1.send(SendConfirmedDataReq(0x10, 0x1234, b"Test message!"))
+    
+    t1.join()
+    t2.join()
 ```
 
 ```
@@ -102,7 +93,7 @@ HciMessage:
 ```
 
 ## How to use (rough overview)
-- `IM282A(<host>/<ip>, <port>, [timeout_s])` will open a TCP serial connection using the SLIP protocol. Timeout will affect reading with `instance.receive()`
+- `IM282A(<serial_device>, [baud_rate], [timeout_s])` will open a serial device using the SLIP protocol. Timeout will affect reading with `instance.handle()`
 - `instance.send(<message>)` is used to send messages derived from the `HciMessage` class.
 - `instance.register_handler(<endpoint_id>, <message_id>, <function>)` registers a callback function for a specific endpoint/message combination. Multiple functions can be registered per endpoint/message and are called during `instance.receive()` sequentially. The function receives a `data: bytes` argument which has the endpoint and message IDs already stripped and can be consumed by message classes like `ping_response = PingRsp.from_bytes(data)`.
 - `instance.default_handler` will handle all messages that are not handled by a callback function (default handler prints the hex bytes on stdout). The function receives two arguments: `head: bytes, data: bytes`. `head` contains the endpoint and message IDs to be consumed by `HciMessage` and data the rest for the resulting message class. See the example above.

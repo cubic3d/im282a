@@ -1,6 +1,6 @@
 import math
 import struct
-import sys
+import serial
 import sliplib
 from crccheck.crc import Crc16X25 as _Crc16X25
 from datetime import datetime as _datetime
@@ -2929,7 +2929,7 @@ class AckTimeoutInd(HciMessage):
     ID = 18
 
     def __init__(self):
-        super().__init__(HciMessage.RadioLinkTest, self.ID)
+        super().__init__(HciMessage.RadioLink, self.ID)
 
     def __str__(self):
         return super().__str__() + "\n AckTimeoutInd"
@@ -3089,24 +3089,36 @@ class ButtonPressedInd(HciMessage):
 
 
 class IM282A:
-    def __init__(self, address: str, port: int, timeout: float = None):
-        self._sock = sliplib.SlipSocket.create_connection((address, port), timeout)
+    def __init__(self, transport):
+        # Check if a given transport has required read, write, close methods
+        for method in ("read", "write", "close"):
+            if not hasattr(transport, method) or not callable(getattr(transport, method)):
+                raise TypeError('{} object has no {} method'.format(transport.__class__.__name__, method))
+
+        self._transport = transport
+        self._slip_driver = sliplib.Driver()
         self._handlers = {}
         self.default_handler = self.default_handler_function
+
+    @classmethod
+    def from_serial(cls, device: str, baud: int = 115200, timeout: float = None):
+        transport = serial.Serial(device, baud, timeout=timeout)
+        return cls(transport)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._sock.close()
+        self.close()
 
     def close(self):
-        self._sock.close()
+        self._transport.close()
 
     def send(self, msg: HciMessage):
         data = bytes(msg)
         crc = _Crc16X25.calcbytes(data, byteorder="little")
-        self._sock.send_msg(data+crc)
+        slip = self._slip_driver.send(data + crc)
+        self._transport.write(slip)
 
     def register_handler(self, endpoint_id: int, message_id: int, handler: _Callable[[bytes]]):
         h = self._handlers.get((endpoint_id, message_id))
@@ -3115,23 +3127,25 @@ class IM282A:
         else:
             h.append(handler)
 
-    def receive(self):
-        data = self._sock.recv_msg()
+    def handle(self, receive_size: int = 1) -> int:
+        data = self._transport.read(receive_size)
+        msgs = self._slip_driver.receive(data)
 
-        # Check CRC
-        crc = _Crc16X25.calc(data)
-        if crc != 0xf47:
-            # Just log CRC errors
-            print("CRC check failed on receive: {}".format(data.hex()), file=sys.stderr)
-            return
+        for msg in msgs:
+            # Check CRC
+            crc = _Crc16X25.calc(msg)
+            if crc != 0xf47:
+                raise CrcError("CRC check failed on receive: {}".format(msg.hex()))
 
-        # Handle message
-        handlers = self._handlers.get((data[0], data[1]))
-        if handlers is not None:
-            for h in handlers:
-                h(data[2:-2])
-        else:
-            self.default_handler(data[:2], data[2:-2])
+            # Handle message
+            handlers = self._handlers.get((msg[0], msg[1]))
+            if handlers is not None:
+                for h in handlers:
+                    h(msg[2:-2])
+            else:
+                self.default_handler(msg[:2], msg[2:-2])
+
+        return len(msgs)
 
     @staticmethod
     def default_handler_function(header: bytes, data: bytes):
@@ -3139,3 +3153,7 @@ class IM282A:
         msg_class = hci_message.get_msg_class()
         msg = msg_class.from_bytes(data)
         print(msg)
+
+
+class CrcError(Exception):
+    pass
