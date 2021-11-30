@@ -3129,6 +3129,11 @@ class IM282A:
 
     def handle(self, receive_size: int = 1) -> int:
         data = self._transport.read(receive_size)
+
+        # Avoid feeding empty bytes to sliplib to prevent it ending the message on expected transport timeouts
+        if len(data) == 0:
+            return 0
+
         msgs = self._slip_driver.receive(data)
 
         for msg in msgs:
